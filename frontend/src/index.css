@@ -1,0 +1,11 @@
+/* Import third-party CSS first */
+@import 'react-datepicker/dist/react-datepicker.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+body {
+  @apply bg-gray-50 text-gray-900;
+}

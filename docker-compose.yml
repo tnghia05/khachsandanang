@@ -1,0 +1,26 @@
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: hostay_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: hostay_db
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: hostay_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
