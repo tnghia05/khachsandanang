@@ -20,3 +20,11 @@ exports.searchHotels = catchAsync(async (req, res, next) => {
     data: results,
   });
 });
+
+exports.getHotelById = catchAsync(async (req, res, next) => {
+  const result = await hotelService.getHotelById(req.params.id);
+  res.status(200).json({
+    success: true,
+    data: result
+  });
+});

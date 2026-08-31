@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { FaMapMarkerAlt, FaStar, FaCamera } from 'react-icons/fa';
 
 const typeColors = {
@@ -68,9 +69,9 @@ const HotelCard = ({ hotel }) => {
               <p className="text-sm text-gray-500 italic">Hết phòng trống</p>
             )}
           </div>
-          <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto">
+          <Link to={`/hotels/${hotel._id}`} className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto text-center">
             Xem chi tiết
-          </button>
+          </Link>
         </div>
       </div>
     </div>

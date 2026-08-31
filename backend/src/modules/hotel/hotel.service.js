@@ -48,3 +48,13 @@ exports.searchHotels = async ({ district, checkIn, checkOut, minPrice, maxPrice,
 
   return results;
 };
+
+exports.getHotelById = async (hotelId) => {
+  const AppError = require('../../utils/AppError');
+  const hotel = await Hotel.findById(hotelId).lean();
+  if (!hotel) {
+    throw new AppError('Hotel not found', 404);
+  }
+  const rooms = await Room.find({ hotelId }).lean();
+  return { ...hotel, rooms };
+};

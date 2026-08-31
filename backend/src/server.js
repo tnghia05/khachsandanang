@@ -10,6 +10,9 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const authRoutes = require('./modules/auth/auth.routes');
 const hotelRoutes = require('./modules/hotel/hotel.routes');
+const bookingRoutes = require('./modules/booking/booking.routes');
+const paymentRoutes = require('./modules/payment/payment.routes');
+const { startBookingExpiryJob } = require('./jobs/bookingExpiry');
 
 connectDB();
 
@@ -29,6 +32,8 @@ if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/hotels', hotelRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/payments', paymentRoutes);
 
 app.all('*', (req, res, next) => {
   const AppError = require('./utils/AppError');
@@ -40,4 +45,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startBookingExpiryJob();
 });

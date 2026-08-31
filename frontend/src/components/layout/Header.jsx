@@ -27,6 +27,9 @@ const Header = () => {
           <nav className="hidden md:flex space-x-8">
             <Link to="/" className="text-gray-700 hover:text-primary-500 font-medium">Trang chủ</Link>
             <Link to="/search" className="text-gray-700 hover:text-primary-500 font-medium">Tìm kiếm</Link>
+            {isAuthenticated && (
+              <Link to="/my-bookings" className="text-gray-700 hover:text-primary-500 font-medium">Đặt phòng của tôi</Link>
+            )}
           </nav>
 
           {/* Right Section */}
@@ -77,6 +80,9 @@ const Header = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link to="/" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-gray-50">Trang chủ</Link>
             <Link to="/search" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-gray-50">Tìm kiếm</Link>
+            {isAuthenticated && (
+              <Link to="/my-bookings" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-gray-50">Đặt phòng của tôi</Link>
+            )}
             {isAuthenticated ? (
               <>
                 <div className="block px-3 py-2 text-base font-medium text-gray-700">Xin chào, {user?.fullName}</div>
