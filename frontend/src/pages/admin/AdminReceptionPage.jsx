@@ -38,6 +38,7 @@ const AdminReceptionPage = () => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [crossTenantError, setCrossTenantError] = useState('');
 
   const initialCode = searchParams.get('code');
 
@@ -55,6 +56,7 @@ const AdminReceptionPage = () => {
       return;
     }
 
+    setCrossTenantError('');
     try {
       setLoading(true);
       const res = await lookupBooking(code);
@@ -62,7 +64,12 @@ const AdminReceptionPage = () => {
       setSearchParams({ code });
     } catch (err) {
       setBooking(null);
-      toast.error(err.response?.data?.message || 'Không tìm thấy đơn đặt phòng');
+      if (err.response?.status === 403) {
+        setCrossTenantError(err.response?.data?.message || 'Bạn không có quyền quản lý đơn đặt phòng của cơ sở lưu trú khác!');
+        toast.error('Cảnh báo: Đơn đặt phòng thuộc quyền sở hữu của Host khác!');
+      } else {
+        toast.error(err.response?.data?.message || 'Không tìm thấy đơn đặt phòng');
+      }
     } finally {
       setLoading(false);
     }
@@ -142,6 +149,24 @@ const AdminReceptionPage = () => {
       </div>
 
       {loading && <LoadingSpinner message="Đang tra cứu thông tin đơn lưu trú..." />}
+
+      {/* Cảnh báo Chặn Check-in Chéo Cơ Sở */}
+      {crossTenantError && (
+        <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl flex items-start space-x-4 animate-shake shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
+            ⚠️
+          </div>
+          <div>
+            <h3 className="font-bold text-red-900 text-base">Từ chối truy cập: Chặn thao tác chéo cơ sở!</h3>
+            <p className="text-sm text-red-700 mt-1">
+              {crossTenantError}
+            </p>
+            <p className="text-xs text-red-500 mt-2">
+              Chính sách phân quyền SaaS của Hostay chỉ cho phép Lễ tân kiểm tra và làm thủ tục check-in cho các đơn đặt phòng thuộc cơ sở lưu trú của chính đối tác mình sở hữu.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Booking Details Card */}
       {booking && (

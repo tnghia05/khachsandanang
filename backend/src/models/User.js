@@ -34,6 +34,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    subscription: {
+      plan: {
+        type: String,
+        default: 'standard',
+      },
+      expiresAt: {
+        type: Date,
+        default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 ngày dùng thử
+      },
+      isActive: {
+        type: Boolean,
+        default: true,
+      },
+    },
   },
   {
     timestamps: true,

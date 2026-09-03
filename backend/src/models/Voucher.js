@@ -56,6 +56,11 @@ const voucherSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    hotelId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Hotel',
+      default: null, // null = Toàn hệ thống (Super Admin), ObjectId = Voucher riêng của khách sạn
+    },
   },
   {
     timestamps: true,

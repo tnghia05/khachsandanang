@@ -5,7 +5,7 @@ const catchAsync = require('../../utils/catchAsync');
 // 1. ANALYTICS
 // ==========================================
 exports.getAnalytics = catchAsync(async (req, res, next) => {
-  const result = await adminService.getAnalytics(req.user);
+  const result = await adminService.getAnalytics(req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     data: result,
@@ -17,7 +17,7 @@ exports.getAnalytics = catchAsync(async (req, res, next) => {
 // ==========================================
 exports.lookupBooking = catchAsync(async (req, res, next) => {
   const { code } = req.query;
-  const booking = await adminService.lookupBooking(code);
+  const booking = await adminService.lookupBooking(code, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     data: booking,
@@ -26,7 +26,7 @@ exports.lookupBooking = catchAsync(async (req, res, next) => {
 
 exports.checkIn = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const booking = await adminService.checkIn(id);
+  const booking = await adminService.checkIn(id, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     message: 'Check-in thành công',
@@ -36,7 +36,7 @@ exports.checkIn = catchAsync(async (req, res, next) => {
 
 exports.checkOut = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const booking = await adminService.checkOut(id);
+  const booking = await adminService.checkOut(id, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     message: 'Check-out thành công',
@@ -46,7 +46,7 @@ exports.checkOut = catchAsync(async (req, res, next) => {
 
 exports.getAllBookings = catchAsync(async (req, res, next) => {
   const { status, search, page, limit } = req.query;
-  const result = await adminService.getAllBookings({ status, search, page, limit });
+  const result = await adminService.getAllBookings({ status, search, page, limit }, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     data: result.bookings,
@@ -55,10 +55,10 @@ exports.getAllBookings = catchAsync(async (req, res, next) => {
 });
 
 // ==========================================
-// 3. CRUD HOTELS
+// 3. CRUD HOTELS & AD PACKAGE
 // ==========================================
 exports.getHotels = catchAsync(async (req, res, next) => {
-  const hotels = await adminService.getHotels(req.user);
+  const hotels = await adminService.getHotels(req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     total: hotels.length,
@@ -75,7 +75,7 @@ exports.createHotel = catchAsync(async (req, res, next) => {
 });
 
 exports.updateHotel = catchAsync(async (req, res, next) => {
-  const hotel = await adminService.updateHotel(req.params.id, req.body);
+  const hotel = await adminService.updateHotel(req.params.id, req.body, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     data: hotel,
@@ -83,10 +83,19 @@ exports.updateHotel = catchAsync(async (req, res, next) => {
 });
 
 exports.toggleHotelStatus = catchAsync(async (req, res, next) => {
-  const hotel = await adminService.toggleHotelStatus(req.params.id);
+  const hotel = await adminService.toggleHotelStatus(req.params.id, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     message: `Đã ${hotel.isActive ? 'hiển thị' : 'ẩn'} cơ sở lưu trú`,
+    data: hotel,
+  });
+});
+
+exports.updateHotelAdPackage = catchAsync(async (req, res, next) => {
+  const hotel = await adminService.updateHotelAdPackage(req.params.id, req.body, req.user, req.myHotelIds);
+  res.status(200).json({
+    success: true,
+    message: hotel.isFeatured ? 'Đã kích hoạt gói quảng cáo Banner & Dòng chữ chạy thành công' : 'Đã hủy gói quảng cáo',
     data: hotel,
   });
 });
@@ -96,7 +105,7 @@ exports.toggleHotelStatus = catchAsync(async (req, res, next) => {
 // ==========================================
 exports.getRooms = catchAsync(async (req, res, next) => {
   const { hotelId } = req.query;
-  const rooms = await adminService.getRooms({ hotelId });
+  const rooms = await adminService.getRooms({ hotelId }, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     total: rooms.length,
@@ -105,7 +114,7 @@ exports.getRooms = catchAsync(async (req, res, next) => {
 });
 
 exports.createRoom = catchAsync(async (req, res, next) => {
-  const room = await adminService.createRoom(req.body);
+  const room = await adminService.createRoom(req.body, req.user, req.myHotelIds);
   res.status(201).json({
     success: true,
     data: room,
@@ -113,7 +122,7 @@ exports.createRoom = catchAsync(async (req, res, next) => {
 });
 
 exports.updateRoom = catchAsync(async (req, res, next) => {
-  const room = await adminService.updateRoom(req.params.id, req.body);
+  const room = await adminService.updateRoom(req.params.id, req.body, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     data: room,
@@ -121,7 +130,7 @@ exports.updateRoom = catchAsync(async (req, res, next) => {
 });
 
 exports.toggleRoomStatus = catchAsync(async (req, res, next) => {
-  const room = await adminService.toggleRoomStatus(req.params.id);
+  const room = await adminService.toggleRoomStatus(req.params.id, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     message: `Đã ${room.isActive ? 'hiển thị' : 'ẩn'} phòng`,
@@ -133,7 +142,7 @@ exports.toggleRoomStatus = catchAsync(async (req, res, next) => {
 // 5. CRUD VOUCHERS
 // ==========================================
 exports.getVouchers = catchAsync(async (req, res, next) => {
-  const vouchers = await adminService.getVouchers();
+  const vouchers = await adminService.getVouchers(req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     total: vouchers.length,
@@ -142,7 +151,7 @@ exports.getVouchers = catchAsync(async (req, res, next) => {
 });
 
 exports.createVoucher = catchAsync(async (req, res, next) => {
-  const voucher = await adminService.createVoucher(req.body);
+  const voucher = await adminService.createVoucher(req.body, req.user, req.myHotelIds);
   res.status(201).json({
     success: true,
     data: voucher,
@@ -150,7 +159,7 @@ exports.createVoucher = catchAsync(async (req, res, next) => {
 });
 
 exports.updateVoucher = catchAsync(async (req, res, next) => {
-  const voucher = await adminService.updateVoucher(req.params.id, req.body);
+  const voucher = await adminService.updateVoucher(req.params.id, req.body, req.user, req.myHotelIds);
   res.status(200).json({
     success: true,
     data: voucher,
@@ -158,7 +167,18 @@ exports.updateVoucher = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteVoucher = catchAsync(async (req, res, next) => {
-  const result = await adminService.deleteVoucher(req.params.id);
+  const result = await adminService.deleteVoucher(req.params.id, req.user, req.myHotelIds);
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+});
+
+// ==========================================
+// 6. THÔNG TIN THUÊ BAO SAAS
+// ==========================================
+exports.getSubscriptionInfo = catchAsync(async (req, res, next) => {
+  const result = await adminService.getSubscriptionInfo(req.user);
   res.status(200).json({
     success: true,
     data: result,

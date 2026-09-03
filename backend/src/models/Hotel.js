@@ -60,6 +60,18 @@ const hotelSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    featuredExpiresAt: {
+      type: Date,
+    },
+    marqueeText: {
+      type: String,
+      default: '',
+      trim: true,
+    },
   },
   {
     timestamps: true,

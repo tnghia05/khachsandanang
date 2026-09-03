@@ -12,6 +12,7 @@ import {
   FaBars,
   FaTimes,
   FaUserShield,
+  FaCrown,
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -25,6 +26,11 @@ const AdminLayout = () => {
     navigate('/login');
   };
 
+  const isSuperAdmin = user?.role === 'admin';
+  const daysLeft = user?.subscription?.expiresAt
+    ? Math.max(0, Math.ceil((new Date(user.subscription.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))
+    : 30;
+
   const navItems = [
     { to: '/admin', label: 'Tổng quan PMS', icon: FaChartPie, end: true },
     { to: '/admin/reception', label: 'Lễ tân & Check-in QR', icon: FaQrcode },
@@ -32,6 +38,7 @@ const AdminLayout = () => {
     { to: '/admin/hotels', label: 'Khách sạn / Homestay', icon: FaHotel },
     { to: '/admin/rooms', label: 'Quản lý Phòng', icon: FaBed },
     { to: '/admin/vouchers', label: 'Khuyến mãi / Voucher', icon: FaTicketAlt },
+    { to: '/admin/subscription', label: 'Gói Dịch Vụ & Quảng Cáo', icon: FaCrown },
   ];
 
   return (
@@ -40,7 +47,9 @@ const AdminLayout = () => {
       <div className="md:hidden bg-slate-900 text-white flex items-center justify-between p-4 sticky top-0 z-40 shadow">
         <div className="flex items-center space-x-2">
           <span className="font-extrabold text-xl text-primary-400">HOSTAY</span>
-          <span className="text-xs bg-primary-900 text-primary-300 px-2 py-0.5 rounded font-bold uppercase">PMS</span>
+          <span className="text-xs bg-primary-900 text-primary-300 px-2 py-0.5 rounded font-bold uppercase">
+            {isSuperAdmin ? 'SaaS Master' : 'Host PMS'}
+          </span>
         </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -68,7 +77,9 @@ const AdminLayout = () => {
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <span className="font-extrabold text-2xl tracking-wider text-primary-400">HOSTAY</span>
-            <span className="text-xs bg-primary-600 text-white px-2 py-0.5 rounded font-bold uppercase">PMS</span>
+            <span className="text-xs bg-primary-600 text-white px-2 py-0.5 rounded font-bold uppercase">
+              {isSuperAdmin ? 'Master' : 'PMS'}
+            </span>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden text-gray-400 hover:text-white">
             <FaTimes />
@@ -77,14 +88,29 @@ const AdminLayout = () => {
 
         {/* User Role Badge */}
         <div className="px-6 py-4 bg-slate-800/60 border-b border-slate-800 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-primary-600/30 text-primary-400 flex items-center justify-center font-bold text-lg">
-            <FaUserShield />
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+            isSuperAdmin ? 'bg-amber-500/20 text-amber-400' : 'bg-primary-600/30 text-primary-400'
+          }`}>
+            {isSuperAdmin ? <FaCrown /> : <FaUserShield />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate text-white">{user?.fullName || 'Quản trị viên'}</p>
-            <span className="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-medium uppercase">
-              {user?.role === 'admin' ? 'Quản trị hệ thống' : 'Chủ khách sạn (Host)'}
-            </span>
+            <p className="text-sm font-semibold truncate text-white">{user?.fullName || 'Người dùng'}</p>
+            {isSuperAdmin ? (
+              <span className="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 font-bold border border-amber-800/60 uppercase">
+                Super Admin
+              </span>
+            ) : (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 font-medium">
+                  Đối tác Host
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                  daysLeft > 7 ? 'bg-emerald-950 text-emerald-300' : 'bg-red-950 text-red-300'
+                }`}>
+                  Còn {daysLeft} ngày
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -135,8 +161,21 @@ const AdminLayout = () => {
         {/* Top Header */}
         <header className="bg-white border-b border-gray-200 px-6 py-4 hidden md:flex justify-between items-center sticky top-0 z-20">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Kênh Quản Trị Khách Sạn & Vận Hành PMS</h2>
-            <p className="text-xs text-gray-500">Hệ thống quản lý lưu trú & ưu đãi du lịch Đà Nẵng</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-gray-800">
+                {isSuperAdmin ? 'Kênh Quản Trị Hệ Thống SaaS Hostay' : 'Kênh Quản Trị Khách Sạn & Lễ Tân PMS'}
+              </h2>
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase ${
+                isSuperAdmin ? 'bg-amber-100 text-amber-800' : 'bg-primary-100 text-primary-800'
+              }`}>
+                {isSuperAdmin ? 'Platform Super Admin' : 'Tenant Host'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {isSuperAdmin
+                ? 'Toàn quyền điều phối cơ sở lưu trú, voucher toàn sàn và thuê bao đối tác'
+                : 'Quản lý riêng biệt cơ sở lưu trú, phòng nghỉ, doanh thu và quầy lễ tân check-in'}
+            </p>
           </div>
           <div className="flex items-center space-x-3">
             <Link

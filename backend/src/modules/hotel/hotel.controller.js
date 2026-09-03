@@ -28,3 +28,12 @@ exports.getHotelById = catchAsync(async (req, res, next) => {
     data: result
   });
 });
+
+exports.getFeaturedHotels = catchAsync(async (req, res, next) => {
+  const result = await hotelService.getFeaturedHotels();
+  res.status(200).json({
+    success: true,
+    data: result
+  });
+});
+

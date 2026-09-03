@@ -21,6 +21,7 @@ import AdminBookingsPage from './pages/admin/AdminBookingsPage';
 import AdminHotelsPage from './pages/admin/AdminHotelsPage';
 import AdminRoomsPage from './pages/admin/AdminRoomsPage';
 import AdminVouchersPage from './pages/admin/AdminVouchersPage';
+import AdminSubscriptionPage from './pages/admin/AdminSubscriptionPage';
 
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -58,6 +59,7 @@ function App() {
             <Route path="/admin/hotels" element={<AdminHotelsPage />} />
             <Route path="/admin/rooms" element={<AdminRoomsPage />} />
             <Route path="/admin/vouchers" element={<AdminVouchersPage />} />
+            <Route path="/admin/subscription" element={<AdminSubscriptionPage />} />
           </Route>
         </Route>
       </Routes>

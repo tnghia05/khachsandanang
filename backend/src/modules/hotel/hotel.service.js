@@ -58,3 +58,19 @@ exports.getHotelById = async (hotelId) => {
   const rooms = await Room.find({ hotelId }).lean();
   return { ...hotel, rooms };
 };
+
+exports.getFeaturedHotels = async () => {
+  const now = new Date();
+  const hotels = await Hotel.find({
+    isActive: true,
+    isFeatured: true,
+    $or: [{ featuredExpiresAt: { $gte: now } }, { featuredExpiresAt: null }],
+  }).lean();
+
+  const marqueeMessages = hotels
+    .map((h) => h.marqueeText)
+    .filter(Boolean);
+
+  return { hotels, marqueeMessages };
+};
+

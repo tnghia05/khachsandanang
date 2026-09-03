@@ -10,15 +10,19 @@ import {
   FaTimesCircle,
   FaTimes,
   FaCalendarAlt,
+  FaHotel,
 } from 'react-icons/fa';
-import { getAdminVouchers, createVoucher, updateVoucher, deleteVoucher } from '../../api/adminApi';
+import { getAdminVouchers, createVoucher, updateVoucher, deleteVoucher, getAdminHotels } from '../../api/adminApi';
+import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const formatCurrency = (val) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
 
 const AdminVouchersPage = () => {
+  const { user } = useAuth();
   const [vouchers, setVouchers] = useState([]);
+  const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState(null);
@@ -27,6 +31,7 @@ const AdminVouchersPage = () => {
   const [formData, setFormData] = useState({
     code: '',
     description: '',
+    hotelId: '',
     discountType: 'percent',
     discountPercent: 10,
     discountAmount: 50000,
@@ -38,20 +43,24 @@ const AdminVouchersPage = () => {
     isActive: true,
   });
 
-  const fetchVouchers = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await getAdminVouchers();
-      setVouchers(res.data || []);
+      const [vouchersRes, hotelsRes] = await Promise.all([
+        getAdminVouchers(),
+        getAdminHotels(),
+      ]);
+      setVouchers(vouchersRes.data || []);
+      setHotels(hotelsRes.data || []);
     } catch (err) {
-      console.error('Lỗi khi tải danh sách voucher:', err);
+      console.error('Lỗi khi tải danh sách voucher & khách sạn:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchVouchers();
+    fetchData();
   }, []);
 
   const handleOpenModal = (voucher = null) => {
@@ -60,6 +69,7 @@ const AdminVouchersPage = () => {
       setFormData({
         code: voucher.code,
         description: voucher.description || '',
+        hotelId: voucher.hotelId?._id || voucher.hotelId || '',
         discountType: voucher.discountType || 'percent',
         discountPercent: voucher.discountPercent || 10,
         discountAmount: voucher.discountAmount || 50000,
@@ -75,6 +85,7 @@ const AdminVouchersPage = () => {
       setFormData({
         code: '',
         description: '',
+        hotelId: user?.role === 'host' ? (hotels[0]?._id || '') : '',
         discountType: 'percent',
         discountPercent: 10,
         discountAmount: 50000,
@@ -94,9 +105,9 @@ const AdminVouchersPage = () => {
     try {
       await deleteVoucher(id);
       toast.success('Đã xóa mã ưu đãi');
-      fetchVouchers();
+      fetchData();
     } catch (err) {
-      toast.error('Lỗi khi xóa mã ưu đãi');
+      toast.error(err.response?.data?.message || 'Lỗi khi xóa mã ưu đãi');
     }
   };
 
@@ -104,9 +115,9 @@ const AdminVouchersPage = () => {
     try {
       await updateVoucher(voucher._id, { isActive: !voucher.isActive });
       toast.success(`Đã ${!voucher.isActive ? 'kích hoạt' : 'tắt'} voucher`);
-      fetchVouchers();
+      fetchData();
     } catch (err) {
-      toast.error('Lỗi khi đổi trạng thái voucher');
+      toast.error(err.response?.data?.message || 'Lỗi khi đổi trạng thái voucher');
     }
   };
 
@@ -117,9 +128,15 @@ const AdminVouchersPage = () => {
       return;
     }
 
+    if (user?.role === 'host' && !formData.hotelId) {
+      toast.error('Đối tác Host bắt buộc phải chọn cơ sở lưu trú của mình');
+      return;
+    }
+
     const payload = {
       ...formData,
       code: formData.code.trim().toUpperCase(),
+      hotelId: formData.hotelId || null,
       discountPercent: Number(formData.discountPercent),
       discountAmount: Number(formData.discountAmount),
       maxDiscount: Number(formData.maxDiscount),
@@ -139,7 +156,7 @@ const AdminVouchersPage = () => {
         toast.success('Tạo mới voucher thành công');
       }
       setIsModalOpen(false);
-      fetchVouchers();
+      fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi khi lưu voucher');
     } finally {
@@ -156,7 +173,9 @@ const AdminVouchersPage = () => {
             <FaTicketAlt className="text-primary-500 mr-3" /> Quản Lý Khuyến Mãi & Voucher
           </h1>
           <p className="text-sm text-gray-500">
-            Cấu hình mã chiết khấu tự động, tỷ lệ giảm giá và hạn mức áp dụng cho khách hàng.
+            {user?.role === 'admin'
+              ? 'Tạo voucher tài trợ toàn sàn hoặc voucher riêng cho từng cơ sở đối tác.'
+              : 'Tạo mã giảm giá độc quyền cho các cơ sở lưu trú do bạn sở hữu.'}
           </p>
         </div>
         <button
@@ -183,6 +202,7 @@ const AdminVouchersPage = () => {
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
                   <th className="py-3.5 px-6">Mã Voucher</th>
+                  <th className="py-3.5 px-6">Phạm vi áp dụng</th>
                   <th className="py-3.5 px-6">Mức chiết khấu</th>
                   <th className="py-3.5 px-6">Đơn tối thiểu</th>
                   <th className="py-3.5 px-6">Lượt sử dụng</th>
@@ -203,6 +223,18 @@ const AdminVouchersPage = () => {
                         </span>
                         {v.description && (
                           <p className="text-xs text-gray-500 mt-1.5 line-clamp-1">{v.description}</p>
+                        )}
+                      </td>
+                      <td className="py-4 px-6">
+                        {v.hotelId ? (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 inline-flex items-center">
+                            <FaHotel className="mr-1 text-[10px]" />
+                            {v.hotelId?.name || 'Khách sạn riêng'}
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                            Toàn sàn (Hostay tài trợ)
+                          </span>
                         )}
                       </td>
                       <td className="py-4 px-6 font-bold text-gray-900">
@@ -298,6 +330,27 @@ const AdminVouchersPage = () => {
                   placeholder="VD: HOSTAY50"
                   className="w-full uppercase font-bold tracking-wider px-3 py-2 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">
+                  Phạm vi áp dụng {user?.role === 'host' ? '(Bắt buộc chọn cơ sở của bạn)' : ''} *
+                </label>
+                <select
+                  value={formData.hotelId}
+                  onChange={(e) => setFormData({ ...formData, hotelId: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white font-medium"
+                  required={user?.role === 'host'}
+                >
+                  {user?.role === 'admin' && (
+                    <option value="">-- Toàn hệ thống (Hostay tài trợ) --</option>
+                  )}
+                  {hotels.map((h) => (
+                    <option key={h._id} value={h._id}>
+                      {h.name} ({h.district})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

@@ -48,6 +48,11 @@ export const toggleHotelStatus = async (id) => {
   return res.data;
 };
 
+export const updateHotelAdPackage = async (id, data) => {
+  const res = await axiosInstance.patch(`/admin/hotels/${id}/ad-package`, data);
+  return res.data;
+};
+
 // 4. Quản lý Phòng
 export const getAdminRooms = async (hotelId) => {
   const res = await axiosInstance.get('/admin/rooms', { params: hotelId ? { hotelId } : {} });
@@ -87,5 +92,11 @@ export const updateVoucher = async (id, data) => {
 
 export const deleteVoucher = async (id) => {
   const res = await axiosInstance.delete(`/admin/vouchers/${id}`);
+  return res.data;
+};
+
+// 6. Quản lý Gói dịch vụ SaaS
+export const getSubscription = async () => {
+  const res = await axiosInstance.get('/admin/subscription');
   return res.data;
 };
