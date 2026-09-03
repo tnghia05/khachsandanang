@@ -30,14 +30,23 @@ const PaymentMethodSelector = ({ selected, onChange }) => {
         return (
           <label 
             key={option.value}
+            onClick={() => onChange(option.value)}
             className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
               isSelected 
                 ? 'border-primary-500 bg-primary-50 shadow-md shadow-primary-100' 
                 : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
             }`}
           >
+            <input 
+              type="radio" 
+              name="paymentMethod" 
+              value={option.value} 
+              checked={isSelected} 
+              onChange={() => onChange(option.value)} 
+              className="hidden" 
+            />
             <div className="flex items-center h-full mr-4 pt-1">
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                 isSelected ? 'border-primary-500' : 'border-gray-300'
               }`}>
                 {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary-500" />}
