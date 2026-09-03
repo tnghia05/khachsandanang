@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaWater, FaBars, FaTimes, FaUserCircle } from 'react-icons/fa';
+import { FaWater, FaBars, FaTimes, FaUserCircle, FaUserShield } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
@@ -14,6 +14,8 @@ const Header = () => {
     navigate('/');
   };
 
+  const isStaff = user && (user.role === 'admin' || user.role === 'host');
+
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,11 +26,19 @@ const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex space-x-8 items-center">
             <Link to="/" className="text-gray-700 hover:text-primary-500 font-medium">Trang chủ</Link>
             <Link to="/search" className="text-gray-700 hover:text-primary-500 font-medium">Tìm kiếm</Link>
             {isAuthenticated && (
               <Link to="/my-bookings" className="text-gray-700 hover:text-primary-500 font-medium">Đặt phòng của tôi</Link>
+            )}
+            {isStaff && (
+              <Link
+                to="/admin"
+                className="bg-slate-900 text-primary-400 hover:text-white hover:bg-slate-800 px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center shadow-sm"
+              >
+                <FaUserShield className="mr-1.5" /> Kênh Quản Trị PMS
+              </Link>
             )}
           </nav>
 
@@ -45,9 +55,18 @@ const Header = () => {
                 </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-1 z-10">
+                    {isStaff && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block w-full text-left px-4 py-2 text-sm text-primary-600 font-semibold hover:bg-gray-100"
+                      >
+                        Kênh Quản Trị PMS
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Đăng xuất
                     </button>
@@ -82,6 +101,9 @@ const Header = () => {
             <Link to="/search" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-gray-50">Tìm kiếm</Link>
             {isAuthenticated && (
               <Link to="/my-bookings" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-gray-50">Đặt phòng của tôi</Link>
+            )}
+            {isStaff && (
+              <Link to="/admin" className="block px-3 py-2 text-base font-bold text-primary-600 hover:bg-gray-50">Kênh Quản Trị PMS</Link>
             )}
             {isAuthenticated ? (
               <>

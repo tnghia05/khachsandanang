@@ -64,6 +64,16 @@ const bookingSchema = new mongoose.Schema(
     holdExpiresAt: {
       type: Date,
     },
+    voucherCode: {
+      type: String,
+      default: '',
+    },
+    checkInTimestamp: {
+      type: Date,
+    },
+    checkOutTimestamp: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

@@ -5,6 +5,7 @@ const Hotel = require('../models/Hotel');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
+const Voucher = require('../models/Voucher');
 
 const seedDB = async () => {
   try {
@@ -16,6 +17,7 @@ const seedDB = async () => {
     await Room.deleteMany();
     await Booking.deleteMany();
     await Payment.deleteMany();
+    await Voucher.deleteMany();
 
     console.log('Collections cleared');
 
@@ -95,9 +97,96 @@ const seedDB = async () => {
       });
     }
 
-    await Room.insertMany(roomsData);
+    const createdRooms = await Room.insertMany(roomsData);
 
-    console.log('Database seeded successfully');
+    // 1. Seed Vouchers
+    const now = new Date();
+    const oneYearLater = new Date();
+    oneYearLater.setFullYear(now.getFullYear() + 1);
+
+    const vouchersData = [
+      {
+        code: 'HOSTAY50',
+        description: 'Giảm 50.000 VNĐ cho đơn đặt phòng từ 500.000 VNĐ',
+        discountType: 'fixed',
+        discountAmount: 50000,
+        minOrderValue: 500000,
+        maxUsage: 200,
+        usedCount: 15,
+        startDate: new Date('2026-01-01'),
+        endDate: oneYearLater,
+        isActive: true,
+      },
+      {
+        code: 'DANANG10',
+        description: 'Giảm 10% tối đa 200.000 VNĐ cho đơn từ 1.000.000 VNĐ',
+        discountType: 'percent',
+        discountPercent: 10,
+        maxDiscount: 200000,
+        minOrderValue: 1000000,
+        maxUsage: 100,
+        usedCount: 28,
+        startDate: new Date('2026-01-01'),
+        endDate: oneYearLater,
+        isActive: true,
+      },
+      {
+        code: 'HE2026',
+        description: 'Chào hè 2026! Giảm 15% tối đa 300.000 VNĐ cho đơn từ 1.500.000 VNĐ',
+        discountType: 'percent',
+        discountPercent: 15,
+        maxDiscount: 300000,
+        minOrderValue: 1500000,
+        maxUsage: 50,
+        usedCount: 5,
+        startDate: new Date('2026-01-01'),
+        endDate: oneYearLater,
+        isActive: true,
+      },
+    ];
+
+    await Voucher.insertMany(vouchersData);
+
+    // 2. Seed Sample Bookings for Admin Analytics
+    const sampleHotel = createdHotels[0];
+    const sampleRoom = createdRooms[0];
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    await Booking.create([
+      {
+        customerId: customer._id,
+        hotelId: sampleHotel._id,
+        roomId: sampleRoom._id,
+        checkInDate: yesterday,
+        checkOutDate: tomorrow,
+        totalPrice: sampleRoom.pricePerNight * 2,
+        depositAmount: Math.round(sampleRoom.pricePerNight * 2 * 0.3),
+        status: 'checked_in',
+        paymentStatus: 'fully_paid',
+        checkInTimestamp: yesterday,
+        guestCount: { adults: 2, children: 0 },
+      },
+      {
+        customerId: customer._id,
+        hotelId: sampleHotel._id,
+        roomId: sampleRoom._id,
+        checkInDate: tomorrow,
+        checkOutDate: nextWeek,
+        totalPrice: sampleRoom.pricePerNight * 6,
+        depositAmount: Math.round(sampleRoom.pricePerNight * 6 * 0.3),
+        status: 'confirmed',
+        paymentStatus: 'partially_paid',
+        guestCount: { adults: 2, children: 1 },
+      },
+    ]);
+
+    console.log('Database seeded successfully (Hotels, Rooms, Vouchers, Sample Bookings)');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error);

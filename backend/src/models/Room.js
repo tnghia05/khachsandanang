@@ -38,6 +38,10 @@ const roomSchema = new mongoose.Schema(
       default: 1,
       min: 1,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

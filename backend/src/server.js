@@ -12,6 +12,8 @@ const authRoutes = require('./modules/auth/auth.routes');
 const hotelRoutes = require('./modules/hotel/hotel.routes');
 const bookingRoutes = require('./modules/booking/booking.routes');
 const paymentRoutes = require('./modules/payment/payment.routes');
+const voucherRoutes = require('./modules/voucher/voucher.routes');
+const adminRoutes = require('./modules/admin/admin.routes');
 const { startBookingExpiryJob } = require('./jobs/bookingExpiry');
 
 connectDB();
@@ -34,6 +36,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/hotels', hotelRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/vouchers', voucherRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 app.all('*', (req, res, next) => {
   const AppError = require('./utils/AppError');
